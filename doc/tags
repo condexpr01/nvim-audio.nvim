@@ -1,7 +1,7 @@
-nvim-audio.nvim-private-api	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-api*
-nvim-audio.nvim-private-install	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-install*
-nvim-audio.nvim-private-intro	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-intro*
-nvim-audio.nvim-private-requires	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-requires*
-nvim-audio.nvim-private-see-also	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-see-also*
-nvim-audio.nvim-private-table-of-contents	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private-table-of-contents*
-nvim-audio.nvim-private.txt	nvim-audio.nvim-private.txt	/*nvim-audio.nvim-private.txt*
+nvim-audio.nvim-api	nvim-audio.nvim.txt	/*nvim-audio.nvim-api*
+nvim-audio.nvim-install	nvim-audio.nvim.txt	/*nvim-audio.nvim-install*
+nvim-audio.nvim-intro	nvim-audio.nvim.txt	/*nvim-audio.nvim-intro*
+nvim-audio.nvim-requires	nvim-audio.nvim.txt	/*nvim-audio.nvim-requires*
+nvim-audio.nvim-see-also	nvim-audio.nvim.txt	/*nvim-audio.nvim-see-also*
+nvim-audio.nvim-table-of-contents	nvim-audio.nvim.txt	/*nvim-audio.nvim-table-of-contents*
+nvim-audio.nvim.txt	nvim-audio.nvim.txt	/*nvim-audio.nvim.txt*
