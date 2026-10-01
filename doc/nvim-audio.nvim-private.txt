@@ -1,0 +1,264 @@
+*nvim-audio.nvim-private.txt*
+                               For NVIM v0.8.0    Last change: 2026 October 01
+
+==============================================================================
+Table of Contents                  *nvim-audio.nvim-private-table-of-contents*
+
+1. Intro                                       |nvim-audio.nvim-private-intro|
+2. Requires                                 |nvim-audio.nvim-private-requires|
+3. Install                                   |nvim-audio.nvim-private-install|
+4. API                                           |nvim-audio.nvim-private-api|
+5. See Also                                 |nvim-audio.nvim-private-see-also|
+>
+    ███╗   ██╗██╗   ██╗██╗███╗   ███╗       █████╗ ██╗   ██╗██████╗ ██╗ ██████╗
+    ████╗  ██║██║   ██║██║████╗ ████║      ██╔══██╗██║   ██║██╔══██╗██║██╔═══██╗
+    ██╔██╗ ██║██║   ██║██║██╔████╔██║█████╗███████║██║   ██║██║  ██║██║██║   ██║
+    ██║╚██╗██║╚██╗ ██╔╝██║██║╚██╔╝██║╚════╝██╔══██║██║   ██║██║  ██║██║██║   ██║
+    ██║ ╚████║ ╚████╔╝ ██║██║ ╚═╝ ██║      ██║  ██║╚██████╔╝██████╔╝██║╚██████╔╝
+    ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝     ╚═╝      ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝
+<
+
+
+==============================================================================
+1. Intro                                       *nvim-audio.nvim-private-intro*
+
+
+  A low-level audio API library/plugin for Neovim, powered by the SDL3 audio
+  subsystem. Allows up to 32 audio channels to play simultaneously; the number 32
+  was chosen because it was deemed sufficiently large. Simple to call, lucky to
+  build. Lucky you. Go ahead :)
+
+==============================================================================
+2. Requires                                 *nvim-audio.nvim-private-requires*
+
+- install requires
+
+>yaml
+    must: cmake(command)
+    optional/must: git(command)
+    optional: SDL3(package) installed(clone if not found)
+
+    if-want-to-compile-manually:
+      - ARCHLINUX(tested): run make
+      - MSYS2(tested): run make
+      - MSVC(tested): run nmake
+      - MACOS(untested): run nmake
+      - reference(passed): see .github/workflows/generate-library.yaml
+<
+
+- audio requires
+
+>sh
+    #audio format requires
+    #44100samples, 2channels, fmt: float(pcm_f32le)
+    #you can convert like this:
+    ffmpeg -i input.mp3 -ar 44100 -ac 2 -c:a pcm_f32le output.wav
+<
+
+
+==============================================================================
+3. Install                                   *nvim-audio.nvim-private-install*
+
+- Lazy(`lazy.nvim`)
+
+> <https://github.com/folke/lazy.nvim.git>
+
+>lua
+    ---@diagnostic disable: undefined-global
+
+    -- example:
+    return {
+        "condexpr01/nvim-audio.nvim",
+
+        build = function (plugin)
+            vim.cmd("make -C " .. plugin.dir)
+        end,
+
+        event = "VeryLazy",
+
+        opts = {
+            -- volume gain
+            volume=1.0,
+
+            -- try call fn.ra_bind()
+            bind_when_setup = true
+        },
+
+        config = function (main, opts)
+            -- load audio api(M.fn.*)
+            local ok, M = pcall(require,'nvim-audio')
+            if not ok or not M.fn then
+                vim.notify("FAILED: require nvim-audio")
+                return
+            end
+
+            M.setup(opts)
+
+            --register wav file data and name alias "__tick"
+            --wav requires: 44100sample, 2channel, fmt: SDL_AUDIO_F32(float)
+            M.fn.load_wav("__tick", main.dir .. '/wav/tick.wav')
+
+            -- tigger control
+            vim.g.audio_play_resources = 0;
+            vim.fn.timer_start(139,function()
+                vim.g.audio_play_resources = 1
+            end,{["repeat"] = -1})
+
+            -- create autocmd for playing
+            vim.api.nvim_create_autocmd({
+                "TextYankPost","FileChangedShell",
+                "InsertEnter","InsertLeave",
+                "CmdlineEnter","CmdlineLeave",
+                "BufEnter","BufDelete","BufWritePost","BufModifiedSet",
+                "CompleteDone",
+                "RecordingEnter","RecordingLeave",
+                "VimSuspend","VimResume",
+                "FocusGained","FocusLost",
+                "SwapExists"}, {
+                callback=function()
+                    local res = vim.g.audio_play_resources
+                    if res and res > 0 then
+                        M.fn.ra_play("__tick")
+                        vim.g.audio_play_resources= res - 1
+                    end
+                end
+            })
+
+        end
+
+    }
+<
+
+
+==============================================================================
+4. API                                           *nvim-audio.nvim-private-api*
+
+- check
+
+>lua
+    local ok, M = pcall(require,'nvim-audio')
+
+    --#######################
+    --# ENSURE M.fn NOT NIL #
+    --#######################
+    -- API will be under M.fn
+    -- if no available API, M.fn will be nil
+    if not ok or not M.fn then
+        return
+    end
+
+    -- all api is safe to call, ensure M.fn not nil.
+    -- prefix ra is realtime audio
+    -- max 32 audio will play at the same time, or old will be replaced
+<
+
+- basic
+
+>lua
+
+    -- add wav data into audios and register alias
+    -- arguments:
+    ---- alias_name: for using wav data in another api
+    ---- wav_path: wavfile path(fmt: samples44100,2channels,pcm_f32le)
+    -- return:
+    ---- ok(int):
+    ------ 2: alias already exists
+    ------ 1(true): add success
+    ------ 0(false): err
+    load_wav(alias_name, wav_path)
+
+
+    -- bind audio streams to the default audio device
+    -- return:
+    ---- ok(bool): is_ok
+    ---- what(string): reason
+    ra_bind()
+
+
+    -- unbind audio streams from the default audio device
+    -- return:
+    ---- ok(bool): is_ok
+    ---- what(string): reason
+    ra_unbind()
+
+
+    -- play audio
+    -- arguments:
+    ---- alias_name: register by load_wav
+    -- return:
+    ---- ok(bool): is_ok
+    ---- what(string): reason
+    ra_play(alias_name)
+<
+
+- advanced
+
+>lua
+    -- pause audio playing
+    -- no return value
+    ra_pause()
+
+
+    -- resume audio playing
+    -- no return value
+    ra_resume()
+
+
+    -- reset status
+    -- no return value
+    ra_reset_status()
+
+    -- clear any datas loding to audio streams
+    -- no return value
+    ra_clear()
+
+
+    -- get volume value
+    -- return:
+    ---- gain(float): volume gain
+    ra_get_volume()
+
+
+    -- set volume value
+    -- arguments:
+    ---- gain(float): volume gain
+    -- no return value
+    ra_volume(gain)
+
+
+    -- get the current binding audio device name
+    -- return:
+    ---- name(string)
+    ra_audio_device_name()
+<
+
+
+==============================================================================
+5. See Also                                 *nvim-audio.nvim-private-see-also*
+
+- examples > real configure:
+<https://github.com/condexpr01/nvim-config-lazymiku/blob/main/lua/packs/nvim_audio.lua>
+- Can’t Stop the Loop now > **Don’t overread it — I just mean the sound is
+    mesmerizing.**
+
+>txt
+    Lyrics:
+
+    I'm bringing sensei back, yeah.
+    Those other students don't know how to act, yeah.
+    He's kinda special, he's kinda whack, yeah.
+    It's messed up how new banners get him jacked, yeah.
+    Take it to the bridge.
+
+    One H-pay, uh-huh.
+    U see this sensei baby? he's not brave, uh-huh.
+    He'll let you whip him, YEAH he's that depraved, uh-huh.
+    All his cards are maxed now yeah, he caved
+    Take it to the chorus.
+<
+
+2026-10-01T01:39:00+08:00Written by Vito Devlin(condexpr01@outlook.com) :tada:
+
+Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
+
+vim:tw=78:ts=8:noet:ft=help:norl:

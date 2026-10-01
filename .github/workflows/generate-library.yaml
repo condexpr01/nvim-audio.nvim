@@ -1,0 +1,132 @@
+name: generate-library
+
+on:
+  workflow_dispatch
+
+jobs:
+  make-on-linux-and-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        # linux-x64 linux-arm64 darwin-x86 darwin-arm64
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-26]
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v7
+
+      - name: get-cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: latestrc
+
+      - name: package-on-linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+             sudo apt-get update
+             sudo apt-get install -y \
+               libasound2-dev \
+               libpulse-dev \
+               libjack-dev \
+               libsndio-dev \
+               libpipewire-0.3-dev
+
+      - name: compile-build
+        run: make
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: precompile-${{matrix.os}}
+          path: precompile/*
+
+  make-on-windows:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        #x86_arm64, amd64_arm64, x86_arm, amd64_arm
+        #, x86_amd64, amd64_x86
+        arch: [x86, x64]
+
+    runs-on: windows-latest
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v7
+
+      - name: Setup MSVC
+        uses: TheMrMilchmann/setup-msvc-dev@v4.1.0
+        with:
+          arch: ${{ matrix.arch }}
+          export-path-to-vcvarsall: VCVARSALL_PATH
+
+      - name: compile-build
+        shell: cmd
+        run: |
+          call "%VCVARSALL_PATH%\vcvarsall.bat" ${{matrix.arch}}
+          nmake GENERATOR="-G \"NMake Makefiles\""
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: precompile-${{matrix.arch}}
+          path: precompile/*
+
+  make-on-windows-arm:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        #no arm support
+        arch: [arm64]
+
+    runs-on: windows-11-arm
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v7
+
+      - name: Setup MSVC
+        uses: TheMrMilchmann/setup-msvc-dev@v4.1.0
+        with:
+          arch: ${{matrix.arch}}
+          export-path-to-vcvarsall: VCVARSALL_PATH
+
+      - name: compile-build
+        shell: cmd
+        run: |
+          call "%VCVARSALL_PATH%\vcvarsall.bat" ${{matrix.arch}}
+          nmake GENERATOR="-G \"NMake Makefiles\""
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: precompile-${{matrix.arch}}
+          path: precompile/*
+
+
+  release-library:
+    needs: [make-on-linux-and-macos, make-on-windows, make-on-windows-arm]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+        contents: write
+
+    if: always() && github.ref_type == 'tag'
+
+    steps:
+      - name: download-alllib
+        uses: actions/download-artifact@v8
+        with:
+          path: precompile
+          merge-multiple: true
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: precompile/*
+          body: |
+            # generate library
+
+
