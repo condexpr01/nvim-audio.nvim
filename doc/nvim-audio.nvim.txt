@@ -1,5 +1,5 @@
 *nvim-audio.nvim.txt*
-                               For NVIM v0.8.0    Last change: 2026 October 01
+                               For NVIM v0.8.0    Last change: 2026 October 02
 
 ==============================================================================
 Table of Contents                          *nvim-audio.nvim-table-of-contents*
@@ -7,8 +7,9 @@ Table of Contents                          *nvim-audio.nvim-table-of-contents*
 1. Intro                                               |nvim-audio.nvim-intro|
 2. Requires                                         |nvim-audio.nvim-requires|
 3. Install                                           |nvim-audio.nvim-install|
-4. API                                                   |nvim-audio.nvim-api|
-5. See Also                                         |nvim-audio.nvim-see-also|
+4. BUILD                                               |nvim-audio.nvim-build|
+5. API                                                   |nvim-audio.nvim-api|
+6. See Also                                         |nvim-audio.nvim-see-also|
 >
     ███╗   ██╗██╗   ██╗██╗███╗   ███╗       █████╗ ██╗   ██╗██████╗ ██╗ ██████╗
     ████╗  ██║██║   ██║██║████╗ ████║      ██╔══██╗██║   ██║██╔══██╗██║██╔═══██╗
@@ -131,7 +132,29 @@ Table of Contents                          *nvim-audio.nvim-table-of-contents*
 
 
 ==============================================================================
-4. API                                                   *nvim-audio.nvim-api*
+4. BUILD                                               *nvim-audio.nvim-build*
+
+If you have the right environment but the build fails, try reinstalling.
+
+If your nvim environment is bare and the package installed, you can get
+nvim-audio path by typing the follow in nvim command mode:
+
+>lua
+    =vim.g.nvim_audio_path
+<
+
+then, get in your toolchian environment, run:
+
+>
+    cd <nvim_audio_path>
+
+    make  #on linux, msys2, etc.
+    nmake #on windows msvc.
+<
+
+
+==============================================================================
+5. API                                                   *nvim-audio.nvim-api*
 
 - check
 
@@ -234,7 +257,7 @@ Table of Contents                          *nvim-audio.nvim-table-of-contents*
 
 
 ==============================================================================
-5. See Also                                         *nvim-audio.nvim-see-also*
+6. See Also                                         *nvim-audio.nvim-see-also*
 
 - examples > real configure:
 <https://github.com/condexpr01/nvim-config-lazymiku/blob/main/lua/packs/nvim_audio.lua>
