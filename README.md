@@ -114,6 +114,27 @@ return {
 ```
 
 
+# BUILD
+
+If you have the right environment but the build fails, try reinstalling.    
+
+If your nvim environment is bare and the package installed,    
+you can get nvim-audio path by typing the follow in nvim command mode:    
+
+```lua
+=vim.g.nvim_audio_path
+```
+
+then, get in your toolchian environment, run:    
+```
+cd <nvim_audio_path>
+
+make  #on linux, msys2, etc.
+nmake #on windows msvc.
+```
+
+
+
 # API
 
 * check
