@@ -1,4 +1,5 @@
 nvim-audio.nvim-api	nvim-audio.nvim.txt	/*nvim-audio.nvim-api*
+nvim-audio.nvim-build	nvim-audio.nvim.txt	/*nvim-audio.nvim-build*
 nvim-audio.nvim-install	nvim-audio.nvim.txt	/*nvim-audio.nvim-install*
 nvim-audio.nvim-intro	nvim-audio.nvim.txt	/*nvim-audio.nvim-intro*
 nvim-audio.nvim-requires	nvim-audio.nvim.txt	/*nvim-audio.nvim-requires*
