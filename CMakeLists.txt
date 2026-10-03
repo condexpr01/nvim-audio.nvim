@@ -67,8 +67,8 @@ list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
 list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
 
 if(NOT STATUS_CODE EQUAL 0)
-    file(REMOVE "${PREBUILD_BIN}")
-    message(STATUS 
+	file(REMOVE "${PREBUILD_BIN}")
+	message(STATUS 
 		"Download failed (code ${STATUS_CODE}): ${ERROR_MESSAGE}"
 	)
 endif()
